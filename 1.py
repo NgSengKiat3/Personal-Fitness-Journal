@@ -52,9 +52,18 @@ def main():
         elif choice == 5:
             search()
         elif choice == 6:
-            save_data()
-            print("Data has been saved. Exiting the program. Goodbye!")
-            break
+           save_data()
+           print("Data has been saved. Would you like to exit or return to the main menu?")
+           exit_choice = input("Type 'exit' to quit or 'menu' to return to the main menu: ").strip().lower()
+           if exit_choice == 'exit':
+             print("Exiting the program. Goodbye!")
+             break
+           elif exit_choice == 'menu':
+             print("Returning to the main menu.")
+           else:
+             print("Invalid choice. Returning to the main menu.")
+        else:
+            print("Invalid choice. Please enter a number between 1 and 6.")
 
 # Save data to the CSV file
 def save_data():
@@ -160,7 +169,7 @@ def edit():
         return
 
     print("Available activities:")
-    print(activities[["Activity", "Date"]].reset_index())
+    print(activities[["Activity", "Date"]])
 
     index = getInput(
         "Enter the index of the activity you want to edit: ",
@@ -205,7 +214,7 @@ def delete():
         return
 
     print("Available activities:")
-    print(activities[["Activity", "Date"]].reset_index())
+    print(activities[["Activity", "Date"]])
 
     index = getInput(
         "Enter the index of the activity you want to delete: ",
@@ -226,7 +235,7 @@ def details():
 
     print("\nActivity Details:")
     print("-" * 40)
-    print(activities[["Activity", "Date"]].reset_index(drop=False).rename(columns={"index": "ID"}))
+    print(activities[["Activity", "Date"]].rename(columns={"index": "ID"}))
 
 # Search for activities
 def search():
