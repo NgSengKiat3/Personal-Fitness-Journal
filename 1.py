@@ -27,6 +27,7 @@ def getInput(prompt: str, error_message: str, converter=None, validator=None):
 def main():
     while True:
         print("\nPersonal Fitness Journal")
+        print("-" * 40)
         print("1. Add Activity")
         print("2. Edit Activity")
         print("3. Delete Activity")
@@ -76,6 +77,7 @@ def add():
     
     # Prompt user to enter activity
     print("Choose the activity:")
+    print("-" * 40)
     print("1. Running")
     print("2. Yoga")
     print("3. Cycling")
@@ -99,6 +101,7 @@ def add():
 
     # Option for type of activity
     print("Choose the type of activity:")
+    print("-" * 40)
     print("1. Cardio")
     print("2. Flexibility")
     print("3. Enter a new type")
@@ -139,9 +142,9 @@ def add():
     
     # Checking whether the date input is valid
     date = getInput(
-        "Enter the date (YYYY-MM-DD): ",
-        "Please enter a valid date in YYYY-MM-DD format.",
-        lambda x: datetime.strptime(x, "%Y-%m-%d").date()
+        "Enter the date (DD/MM/YYYY): ",
+        "Please enter a valid date in DD/MM/YYYY format.",
+        lambda x: datetime.strptime(x, "%d/%m/%Y").date()
     )
 
     notes = input("Enter any additional notes: ").strip()
@@ -159,6 +162,7 @@ def add():
 
     # Add to the activities DataFrame
     activities = pd.concat([activities, pd.DataFrame([new_entry])], ignore_index=True)
+    save_data()
     print("New activity added!")
 
 # Edit an activity
@@ -168,8 +172,11 @@ def edit():
         print("No activities found to edit.")
         return
 
-    print("Available activities:")
-    print(activities[["Activity", "Date"]])
+    details_df = activities.reset_index(drop=True)
+    details_df.index += 1
+    print("Record of activities:")
+    print("-" * 40)
+    print(details_df)
 
     index = getInput(
         "Enter the index of the activity you want to edit: ",
@@ -180,19 +187,19 @@ def edit():
 
     activity = activities.loc[index]
 
-    new_activity = input(f"Enter the new activity name (or press Enter to keep '{activity['Activity']}'): ").strip()
-    new_type = input(f"Enter the new type (or press Enter to keep '{activity['Type']}'): ").strip()
+    new_activity = input(f"Rename this activity name (or press Enter to keep '{activity['Activity']}'): ").strip()
+    new_type = input(f"Rename this acticvity type (or press Enter to keep '{activity['Type']}'): ").strip()
     new_duration = input(f"Enter the new duration (or press Enter to keep '{activity['Duration']}'): ").strip()
     new_distance = input(f"Enter the new distance (or press Enter to keep '{activity['Distance']}'): ").strip()
     new_calorie = input(f"Enter the new calorie count (or press Enter to keep '{activity['Calorie']}'): ").strip()
     new_date = input(f"Enter the new date (or press Enter to keep '{activity['Date']}'): ").strip()
-    new_notes = input(f"Enter the new notes (or press Enter to keep '{activity['Notes']}'): ").strip()
+    new_notes = input(f"Enter new additional notes (or press Enter to keep '{activity['Notes']}'): ").strip()
 
     # Update fields if new values are provided
     if new_activity:
         activities.loc[index, "Activity"] = new_activity
     if new_type:
-        activities.loc[index, "Type"] = new_type
+        activities.loc[index, "Type"] = str(new_type)
     if new_duration:
         activities.loc[index, "Duration"] = int(new_duration)
     if new_distance:
@@ -203,7 +210,8 @@ def edit():
         activities.loc[index, "Date"] = new_date
     if new_notes:
         activities.loc[index, "Notes"] = new_notes
-
+        
+    save_data()
     print("Activity updated successfully!")
 
 # Delete an activity
@@ -212,9 +220,11 @@ def delete():
     if activities.empty:
         print("No activities found to delete.")
         return
-
+    details_df = activities.reset_index(drop=True)
+    details_df.index += 1
     print("Available activities:")
-    print(activities[["Activity", "Date"]])
+    print("-" * 40)
+    print(details_df)
 
     index = getInput(
         "Enter the index of the activity you want to delete: ",
@@ -225,6 +235,7 @@ def delete():
 
     activities.drop(index, inplace=True)
     activities.reset_index(drop=True, inplace=True)
+    save_data()
     print("Activity deleted successfully!")
 
 # View details of all activities
@@ -233,9 +244,13 @@ def details():
         print("No activities found.")
         return
 
-    print("\nActivity Details:")
+    print("\nRecord of activities:")
     print("-" * 40)
-    print(activities[["Activity", "Date"]].rename(columns={"index": "ID"}))
+    # Reset index and display with index starting from 1
+    details_df = activities.reset_index(drop=True)
+    details_df.index += 1  # Adjust index to start from 1
+
+    print(details_df)
 
 # Search for activities
 def search():
@@ -260,7 +275,10 @@ def search():
             print("No matching activities found.")
         else:
             print("\nSearch Results:")
-            print(results)
+            print("-" * 40)
+            results_df = results.reset_index(drop=True)
+            results_df.index += 1
+            print(results_df)
     except ValueError as e:
         print(f"Error: {e}")
     except Exception as e:
