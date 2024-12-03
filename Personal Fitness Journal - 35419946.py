@@ -83,11 +83,10 @@ def save_data():
     global activities
     activities.to_csv(data_file, index=False)
 
-#Function to add new data to journal
 def add():
     global activities
     
-    #Prompt user to enter activity
+    # Prompt user to enter activity
     print("Choose the activity:")
     print("-" * 40)
     print("1. Running")
@@ -95,14 +94,17 @@ def add():
     print("3. Cycling")
     print("4. Enter a new activity")
     
-    activity_choice = getInput(
-        "Enter your choice (1-4): ",
-        "Please enter 1, 2, 3, or 4.",
-        int,
-        lambda x: x in range(1, 5)
-    )
+    activity_choice = None
+    while activity_choice is None:
+        try:
+            activity_choice = int(input("Enter your choice (1-4): ").strip())
+            if activity_choice not in range(1, 5):
+                print("Please enter a valid choice (1-4).")
+                activity_choice = None
+        except ValueError:
+            print("Invalid input. Please enter a number between 1 and 4.")
 
-    #Set activity name(either by choice given or type a new one)
+    # Set activity name (either by choice given or type a new one)
     if activity_choice == 1:
         activity = "Running".lower()
     elif activity_choice == 2:
@@ -110,61 +112,91 @@ def add():
     elif activity_choice == 3:
         activity = "Cycling".lower()
     elif activity_choice == 4:
-        activity = getInput("Enter the name of the new activity: ", "Activity name cannot be empty.")
+        activity = ""
+        while not activity.strip():
+            activity = input("Enter the name of the new activity: ").strip()
+            if not activity:
+                print("Activity name cannot be empty. Please try again.")
 
-    #Set type of activity
+    # Set type of activity
     print("Choose the type of activity:")
     print("-" * 40)
     print("1. Cardio")
     print("2. Flexibility")
     print("3. Enter a new type")
     
-    type_choice = getInput(
-        "Enter your choice (1-3): ",
-        "Please enter 1, 2, or 3.",
-        int,
-        lambda x: x in range(1, 4)
-    )
-    
+    type_choice = None
+    while type_choice is None:
+        try:
+            type_choice = int(input("Enter your choice (1-3): ").strip())
+            if type_choice not in range(1, 4):
+                print("Please enter a valid choice (1-3).")
+                type_choice = None
+        except ValueError:
+            print("Invalid input. Please enter a number between 1 and 3.")
+
     if type_choice == 1:
         activity_type = "Cardio".lower()
     elif type_choice == 2:
         activity_type = "Flexibility".lower()
     elif type_choice == 3:
-        activity_type = getInput("Enter the new type of activity: ", "Activity type cannot be empty.")
+        activity_type = ""
+        while not activity_type.strip():
+            activity_type = input("Enter the new type of activity: ").strip()
+            if not activity_type:
+                print("Activity type cannot be empty. Please try again.")
 
-    #Set activity details
-    duration = getInput(
-        "Enter the duration of the activity (in minutes): ",
-        "Please enter a positive integer.",
-        int,
-        lambda x: x > 0
-    )
+    # Set activity details
+    duration = None
+    while duration is None:
+        raw_input = input("Enter the duration of the activity (in minutes): ").strip()
+        # Handle "Enter" (blank input)
+        if raw_input == "":  
+            print("Duration cannot be empty. Please enter a positive value.")
+            continue
+        try:
+            #Convert input to integer
+            duration = int(raw_input)  
+            if duration <= 0:
+                print("Please enter a positive integer.")
+                # Reset to re-prompt
+                duration = None  
+        except ValueError:
+            print("Please enter a valid number.")
+    
     distance = getInput(
         "Enter the distance (in km, enter 0 if not applicable): ",
         "Please enter a non-negative number.",
         float,
         lambda x: x >= 0
     )
-    calorie = getInput(
-        "Enter the calories burned during the activity: ",
-        "Please enter a non-negative number.",
-        float,
-        lambda x: x >= 0
-    )
     
-    #Checking whether date input is valid
-    date = getInput(
-        "Enter the date (DD/MM/YYYY): ",
-        "Please enter a valid date in DD/MM/YYYY format.",
-        lambda x: datetime.strptime(x, "%d/%m/%Y").date(),
-        lambda x: True  
-    ).strftime("%d/%m/%Y")  # Convert back to DD/MM/YYYY format
+    calorie = None
+    while calorie is None:
+        try:
+            calorie = float(input("Enter the calories burned during the activity: ").strip())
+            if calorie < 0:
+                print("Calories burned cannot be negative.")
+                calorie = None
+        except ValueError:
+            print("Invalid input. Please enter a non-negative number.")
     
+    
+    # Checking whether date input is valid
+    date = None
+    while date is None:
+        date_input = input("Enter the date (DD/MM/YYYY): ").strip()
+        if not date_input:
+            print("Date cannot be empty. Please try again.")
+            continue
+        try:
+            date = datetime.strptime(date_input, "%d/%m/%Y").strftime("%d/%m/%Y")
+        except ValueError:
+            print("Invalid date format. Please enter the date in DD/MM/YYYY format.")
 
     notes = input("Enter any additional notes: ").strip()
 
-    #Create a new entry
+    # Create a new entry
     new_entry = {
         "Activity": activity,
         "Type": activity_type,
@@ -175,7 +207,7 @@ def add():
         "Notes": notes
     }
 
-    #Add the new data to DataFrame and save
+    # Add the new data to DataFrame and save
     activities = pd.concat([activities, pd.DataFrame([new_entry])], ignore_index=True)
     save_data()
     print("New activity added!")
@@ -189,7 +221,8 @@ def edit():
 
     #Reset index for display purposes and show current records
     details_df = activities.reset_index(drop=True)
-    details_df.index += 1  # Start index from 1 for user-friendliness
+    # Start index from 1
+    details_df.index += 1  
     print("Record of activities:")
     print("-" * 40)
     print(details_df)
@@ -217,14 +250,14 @@ def edit():
 
     new_distance = getInput(
         f"Enter the new distance (or press Enter to keep '{current_row['Distance']}'): ",
-        "Please enter a non-negative number.",
+        "Please enter a positive number.",
         lambda x: float(x) if x.strip() else current_row['Distance'],
         lambda x: x >= 0
     )
 
     new_calorie = getInput(
         f"Enter the new calorie count (or press Enter to keep '{current_row['Calorie']}'): ",
-        "Please enter a non-negative number.",
+        "Please enter a positve number.",
         lambda x: float(x) if x.strip() else current_row['Calorie'],
         lambda x: x >= 0
     )
@@ -350,6 +383,7 @@ def search():
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
+#Function to display summary between chosen periods
 def display_summary():
     if activities.empty:
         print("No activities found to summarize.")
